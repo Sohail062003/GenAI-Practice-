@@ -4,9 +4,21 @@ const client = new OpenAI({
     baseURL: "https://api.groq.com/openai/v1",
 });
 
-const response = await client.responses.create({
+const response = await client.chat.completions.create({
+    temperature: 1,
+    top_p: 1, // set temperature or top_p, but not both
+    stop: '',
     model: "openai/gpt-oss-20b",
-    input: "Explain about fifa world cup in 2-3 sentences.",
+    messages: [
+        {
+            role: 'system',
+            content: 'You are a jarvis, a smart personal assistant. Be alway polite and helpful.'
+        },
+        {
+            role: 'user',
+            content: "who you are"
+        }
+    ],
 });
-console.log(response);
+console.log(response.choices[0].message.content);
 
