@@ -14,8 +14,25 @@ const response = await client.chat.completions.create({
     frequency_penalty: 1, // to penalize new tokens based on their existing frequency in the text so far
     presence_penalty: 1,
     model: "openai/gpt-oss-20b",
-    response_format: { 'type': 'json_object'},
-    
+    // response_format: { 'type': 'json_object'},
+
+    response_format: {
+        type: 'json_schema',
+        json_schema: {
+            name: 'sentiment_schema',
+            schema: {
+                type: 'object',
+                properties: {
+                    sentiment: {
+                        type: 'string',
+                        enum: ['Positive', 'Neutral', 'Negative'],
+                    }
+                },
+                required: ['sentiment']
+            }
+        }
+    },
+
     messages: [
         {
             role: 'system',
