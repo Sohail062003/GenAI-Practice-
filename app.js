@@ -4,6 +4,8 @@ const client = new OpenAI({
     baseURL: "https://api.groq.com/openai/v1",
 });
 
+
+
 // zod, schema validation library, can be used to validate 
 
 const response = await client.chat.completions.create({
