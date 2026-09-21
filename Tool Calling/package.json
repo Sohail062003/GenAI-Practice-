@@ -13,6 +13,7 @@
   "dependencies": {
     "@tavily/core": "^0.7.13",
     "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "grok-sdk": "^0.0.1-security",
     "groq-sdk": "^1.6.0",
     "openai": "^7.17.0"
