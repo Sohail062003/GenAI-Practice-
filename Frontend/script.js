@@ -8,7 +8,7 @@ askBtn?.addEventListener('click', handelAsk)
 
 
 
-function generate(text) {
+async function generate(text) {
     // append message to ui
     const msg = document.createElement('div');
     msg.className = `my-6 bg-neutral-800 p-3 rounded-xl ml-auto max-w-fit`
@@ -17,28 +17,52 @@ function generate(text) {
     input.value = '';
 
     // Send it to LLM 
+    const assistantMessage = await callServer(text)
+    console.log('assistantMessage', assistantMessage);
+
 
     // Append response to the UI
-
+     const assistantMsgElem = document.createElement('div');
+    assistantMsgElem.className = `max-w-fit`
+    assistantMsgElem.textContent = assistantMessage
+    chatContainer?.appendChild(assistantMsgElem);
     
 }
 
-function handelEnter(e){
+async function callServer(inputText) {
+    const response = await fetch('http://localhost:3001/chat', {
+        method: "POST",
+        headers: {
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({ message: inputText }),
+    });
+
+    if (!response.ok) {
+        throw new Error("Error generating the response")
+    }
+
+    const result = await response.json();
+    return result.message;
+
+}
+
+async function handelEnter(e){
     if (e.key === 'Enter') {
         const text = input?.value.trim();
         if (!text) {
             return;
         }
-        generate(text);
+        await generate(text);
        
     }
 }
 
-function handelAsk(e) {
+async function handelAsk(e) {
     const text = input?.value.trim();
     if (!text) {
         return;
     }
-    generate(text)
+    await generate(text)
 }
 

@@ -12,6 +12,7 @@
   "type": "module",
   "dependencies": {
     "@tavily/core": "^0.7.13",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "grok-sdk": "^0.0.1-security",
