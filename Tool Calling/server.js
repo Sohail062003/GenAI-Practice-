@@ -19,6 +19,8 @@ app.post('/chat', async (req, res) => {
     console.log('Message:', message);
 
     const result = await generate(message);
+    
+    console.log('result: ', result);
 
     res.json({ message: result });
 })

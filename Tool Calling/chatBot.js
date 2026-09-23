@@ -82,7 +82,6 @@ export async function generate(userMessage) {
         }
       }
     }
-  
 }
 
 // tool calling
@@ -93,6 +92,8 @@ async function webSearch({ query }) {
     .map((result) => result.content)
     .join("\n\n");
 
+  console.log(finalResponse);
+    
   return finalResponse;
 }
 

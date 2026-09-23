@@ -22,7 +22,7 @@ async function generate(text) {
 
 
     // Append response to the UI
-     const assistantMsgElem = document.createElement('div');
+    const assistantMsgElem = document.createElement('div');
     assistantMsgElem.className = `max-w-fit`
     assistantMsgElem.textContent = assistantMessage
     chatContainer?.appendChild(assistantMsgElem);

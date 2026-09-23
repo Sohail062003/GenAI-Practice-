@@ -4,8 +4,8 @@ import dotenv from "dotenv";
 import { tavily } from "@tavily/core";
 dotenv.config();
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });  
+const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });  
 
 async function main() {
  
