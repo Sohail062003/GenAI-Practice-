@@ -17,6 +17,7 @@
     "express": "^5.2.1",
     "grok-sdk": "^0.0.1-security",
     "groq-sdk": "^1.6.0",
+    "node-cache": "^5.1.2",
     "openai": "^7.17.0"
   }
 }

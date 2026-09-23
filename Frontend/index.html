@@ -1,860 +1,802 @@
-```html
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>chat</title>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
-  <!-- Lucide Icons -->
+  <title>chatDPT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0c0c0c;
+      --surface:   #131313;
+      --surface2:  #191919;
+      --border:    #1f1f1f;
+      --border2:   #282828;
+      --text:      #e2e2e2;
+      --text-2:    #888;
+      --text-3:    #444;
+      --accent:    #e2e2e2;
+      --radius-sm: 7px;
+      --radius-md: 11px;
+      --radius-lg: 14px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow: hidden;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+    /* ════════════════════════════════
+       LAYOUT
+    ════════════════════════════════ */
+    #app { display: flex; height: 100vh; }
+
+    /* ════════════════════════════════
+       SIDEBAR
+    ════════════════════════════════ */
+    #sidebar {
+      width: 232px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      transition: left 0.2s cubic-bezier(.4,0,.2,1);
+    }
+
+    .sb-top {
+      padding: 14px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sb-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      cursor: default;
+    }
+
+    .brand-logo {
+      width: 26px; height: 26px;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--text);
+    }
+
+    #new-chat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--text-2);
+      font-size: 12.5px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      width: 100%;
+    }
+
+    #new-chat:hover {
+      background: var(--surface2);
+      color: var(--text);
+      border-color: var(--border2);
+    }
+
+    .sb-history {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 12px 8px;
+    }
+
+    .history-group-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-3);
+      padding: 12px 6px 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .history-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      color: var(--text-2);
+      background: transparent;
+      border: none;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background 0.1s, color 0.1s;
+      margin-bottom: 1px;
+    }
+
+    .history-item:hover  { background: var(--surface2); color: var(--text); }
+    .history-item.active { background: var(--surface2); color: var(--text); }
+
+    .sb-footer {
+      padding: 8px 12px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .sb-footer-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 12.5px;
+      color: var(--text-3);
+      cursor: pointer;
+      transition: background 0.1s, color 0.1s;
+      width: 100%;
+    }
+
+    .sb-footer-btn:hover { background: var(--surface2); color: var(--text-2); }
+
+    /* ════════════════════════════════
+       MAIN
+    ════════════════════════════════ */
+    #main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      height: 100vh;
+    }
+
+    /* ── Topbar ── */
+    #topbar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 20;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(12,12,12,0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 8px; }
+
+    #mobile-menu {
+      display: none;
+      width: 32px; height: 32px;
+      align-items: center; justify-content: center;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      border: none;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    #mobile-menu:hover { background: var(--surface2); color: var(--text); }
+
+    .topbar-title { font-size: 13px; font-weight: 600; letter-spacing: -0.2px; }
+    .topbar-sub   { font-size: 10.5px; color: var(--text-3); }
+
+    .topbar-right { display: flex; align-items: center; gap: 2px; }
+
+    .icon-btn {
+      width: 32px; height: 32px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      background: transparent; border: none;
+      color: var(--text-3);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+    .icon-btn:hover { background: var(--surface2); color: var(--text-2); }
+
+    /* ── Chat scroll ── */
+    #chat-container {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      padding: 62px 20px 148px;
+      scroll-behavior: smooth;
+    }
+
+    #chat-inner { max-width: 660px; margin: 0 auto; }
+
+    /* ── Welcome ── */
+    #welcome {
+      min-height: calc(100vh - 210px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px 0 24px;
+    }
+
+    .welcome-icon {
+      width: 44px; height: 44px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-3);
+      margin-bottom: 18px;
+    }
+
+    .welcome-h {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .welcome-p {
+      font-size: 13px;
+      color: var(--text-3);
+      margin-top: 8px;
+      max-width: 340px;
+      line-height: 1.6;
+    }
+
+    /* Suggestion grid */
+    .suggestions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+      max-width: 500px;
+      margin-top: 28px;
+    }
+
+    .suggestion {
+      text-align: left;
+      padding: 13px 13px 11px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, transform 0.1s;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .suggestion:hover {
+      background: var(--surface2);
+      border-color: var(--border2);
+      transform: translateY(-1px);
+    }
+
+    .sug-icon {
+      width: 28px; height: 28px;
+      background: var(--surface2);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-3);
+      margin-bottom: 3px;
+      transition: background 0.12s, color 0.12s;
+    }
+
+    .suggestion:hover .sug-icon { background: var(--border2); color: var(--text-2); }
+
+    .sug-title { font-size: 12.5px; font-weight: 500; color: var(--text-2); }
+    .sug-desc  { font-size: 11.5px; color: var(--text-3); line-height: 1.4; }
+
+    /* ════════════════════════════════
+       MESSAGES  (matched to script.js)
+    ════════════════════════════════ */
+
+    /*
+      script.js appends:
+        user  → div.my-6.bg-neutral-800.p-3.rounded-xl.ml-auto.max-w-fit
+        ai    → div.max-w-fit
+        loading → div.my-6.animate-pulse  (text "Thinking...")
+    */
+
+    /* User bubble — script.js uses ml-auto so we just enhance */
+    #chat-container .my-6.bg-neutral-800 {
+      background: var(--surface2) !important;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg) !important;
+      border-bottom-right-radius: 4px !important;
+      padding: 10px 14px !important;
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: var(--text);
+      max-width: 72% !important;
+      margin-left: auto;
+      margin-top: 20px;
+      margin-bottom: 4px;
+    }
+
+    /* AI message wrapper — script.js gives .max-w-fit with no margin */
+    #chat-container .max-w-fit:not(.bg-neutral-800) {
+      max-width: 100% !important;
+      font-size: 13.5px;
+      line-height: 1.75;
+      color: #c8c8c8;
+      padding: 4px 0 20px 40px;
+      position: relative;
+    }
+
+    /* AI avatar injected via ::before */
+    #chat-container .max-w-fit:not(.bg-neutral-800)::before {
+      content: 'D';
+      position: absolute;
+      left: 0; top: 4px;
+      width: 27px; height: 27px;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 10px;
+      line-height: 27px;
+      text-align: center;
+    }
+
+    /* Loading pulse — script.js gives .my-6.animate-pulse */
+    #chat-container .animate-pulse {
+      padding: 6px 0 20px 40px !important;
+      position: relative;
+      color: transparent !important;
+      font-size: 0 !important;
+    }
+
+    #chat-container .animate-pulse::before {
+      content: 'D';
+      position: absolute;
+      left: 0; top: 2px;
+      width: 27px; height: 27px;
+      background: var(--text);
+      color: var(--bg);
+      border-radius: 6px;
+      font-weight: 700; font-size: 10px;
+      line-height: 27px;
+      text-align: center;
+    }
+
+    /* Replace "Thinking..." text with animated dots */
+    #chat-container .animate-pulse::after {
+      content: '';
+      display: inline-flex;
+      gap: 4px;
+      /* dots drawn with box-shadow trick */
+      width: 6px; height: 6px;
+      background: var(--text-3);
+      border-radius: 50%;
+      box-shadow: 10px 0 0 var(--text-3), 20px 0 0 var(--text-3);
+      animation: dots 1.2s ease-in-out infinite;
+      vertical-align: middle;
+      margin-top: 10px;
+    }
+
+    @keyframes dots {
+      0%,100% { opacity: 0.25; }
+      50%      { opacity: 1; }
+    }
+
+    /* ════════════════════════════════
+       COMPOSER
+    ════════════════════════════════ */
+    #composer-wrap {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      z-index: 10;
+      background: linear-gradient(to top, var(--bg) 72%, transparent);
+      padding: 0 20px 14px;
+    }
+
+    #composer-inner { max-width: 660px; margin: 0 auto; }
+
+    #composer-box {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      transition: border-color 0.15s;
+    }
+
+    #composer-box:focus-within {
+      border-color: #333;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px #2a2a2a;
+    }
+
+    #input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      padding: 13px 14px 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      color: var(--text);
+      line-height: 1.6;
+      max-height: 180px;
+      overflow-y: auto;
+      display: block;
+    }
+
+    #input::placeholder { color: var(--text-3); }
+
+    .composer-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 6px 7px;
+    }
+
+    .composer-left { display: flex; gap: 1px; }
+
+    #ask {
+      width: 31px; height: 31px;
+      border-radius: 8px;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.12s, transform 0.1s, opacity 0.12s;
+      flex-shrink: 0;
+    }
+
+    #ask:disabled {
+      background: var(--surface2);
+      color: var(--text-3);
+      cursor: not-allowed;
+      opacity: 1;
+    }
+
+    #ask:not(:disabled):hover {
+      background: #ccc;
+      transform: scale(1.05);
+    }
+
+    .disclaimer {
+      text-align: center;
+      font-size: 10.5px;
+      color: var(--text-3);
+      margin-top: 7px;
+      opacity: 0.7;
+    }
+
+    /* ── Scroll-to-bottom ── */
+    #scroll-to-bottom {
+      position: absolute;
+      bottom: 142px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text-2);
+      display: none;
+      align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: background 0.12s;
+    }
+    #scroll-to-bottom:hover { background: var(--border2); }
+    #scroll-to-bottom.show  { display: flex; }
+
+    /* ════════════════════════════════
+       MOBILE
+    ════════════════════════════════ */
+    #sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 40;
+    }
+    #sidebar-overlay.show { display: block; }
+
+    @media (max-width: 768px) {
+      #sidebar {
+        position: fixed;
+        left: -240px;
+        top: 0; bottom: 0;
+        z-index: 50;
+      }
+      #sidebar.open { left: 0; }
+      #mobile-menu  { display: flex; }
+      .suggestions  { grid-template-columns: 1fr; }
+
+      #chat-container .my-6.bg-neutral-800 { max-width: 86% !important; }
+    }
+
+    /* ── Keyboard focus ── */
+    button:focus-visible {
+      outline: 2px solid #555;
+      outline-offset: 2px;
+    }
+  </style>
 </head>
 
+<body>
+<div id="sidebar-overlay"></div>
 
-<body class="bg-neutral-950 text-white overflow-hidden">
+<div id="app">
 
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside id="sidebar">
 
-  <!-- =====================================================
-       APP LAYOUT
-  ====================================================== -->
+    <div class="sb-top">
+      <div class="sb-brand">
+        <div class="brand-logo">D</div>
+        <span class="brand-name">chatDPT</span>
+      </div>
 
-  <div class="flex h-screen">
+      <button id="new-chat">
+        <i data-lucide="square-pen" style="width:13px;height:13px;flex-shrink:0"></i>
+        New chat
+      </button>
+    </div>
 
+    <div class="sb-history">
+      <div class="history-group-label">Today</div>
+      <button class="history-item active">Understanding React hooks</button>
+      <button class="history-item">Build ChatGPT UI</button>
+      <button class="history-item">JavaScript async await</button>
 
-    <!-- =====================================================
-         SIDEBAR
-    ====================================================== -->
+      <div class="history-group-label">Yesterday</div>
+      <button class="history-item">MERN authentication</button>
+      <button class="history-item">PostgreSQL pagination</button>
 
-    <aside
-      class="hidden md:flex w-64 shrink-0
-             flex-col
-             border-r border-neutral-800
-             bg-neutral-900"
-    >
+      <div class="history-group-label">Last 7 days</div>
+      <button class="history-item">Node.js REST API design</button>
+      <button class="history-item">Tailwind responsive layout</button>
+    </div>
 
-      <!-- Sidebar Header -->
+    <div class="sb-footer">
+      <button class="sb-footer-btn">
+        <i data-lucide="settings" style="width:13px;height:13px;"></i>
+        Settings
+      </button>
+      <button class="sb-footer-btn">
+        <i data-lucide="circle-help" style="width:13px;height:13px;"></i>
+        Help
+      </button>
+    </div>
 
-      <div class="p-3">
+  </aside>
 
-        <button
-          class="w-full flex items-center gap-3
-                 px-3 py-2.5
-                 rounded-lg
-                 hover:bg-neutral-800
-                 transition"
-        >
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main id="main">
 
-          <div
-            class="w-8 h-8 rounded-lg
-                   bg-white text-black
-                   flex items-center justify-center
-                   font-bold text-sm"
-          >
-            D
+    <!-- Topbar -->
+    <header id="topbar">
+      <div class="topbar-left">
+        <button id="mobile-menu" aria-label="Open menu">
+          <i data-lucide="menu" style="width:15px;height:15px;"></i>
+        </button>
+        <div>
+          <div class="topbar-title">chatDPT</div>
+          <div class="topbar-sub">Powered by Groq</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" title="Search">
+          <i data-lucide="search" style="width:14px;height:14px;"></i>
+        </button>
+        <button class="icon-btn" title="More">
+          <i data-lucide="ellipsis" style="width:14px;height:14px;"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Chat area — id="chat-container" matches script.js querySelector -->
+    <div id="chat-container">
+      <div id="chat-inner">
+
+        <!-- Welcome screen -->
+        <section id="welcome">
+          <div class="welcome-icon">
+            <i data-lucide="sparkles" style="width:19px;height:19px;"></i>
           </div>
+          <h2 class="welcome-h">How can I help?</h2>
+          <p class="welcome-p">Ask anything — code, concepts, or a quick search.</p>
 
-          <span class="font-semibold text-sm">
-            chatDPT
-          </span>
-
-        </button>
-
-
-        <!-- New Chat -->
-
-        <button
-          id="new-chat"
-          class="w-full mt-3
-                 flex items-center gap-3
-                 px-3 py-2.5
-                 rounded-lg
-                 border border-neutral-800
-                 hover:bg-neutral-800
-                 transition"
-        >
-
-          <i data-lucide="square-pen" class="w-4 h-4"></i>
-
-          <span class="text-sm">
-            New chat
-          </span>
-
-        </button>
-
-      </div>
-
-
-      <!-- Chat History -->
-
-      <div class="flex-1 overflow-y-auto px-3 py-4">
-
-        <!-- Today -->
-
-        <p
-          class="px-2 mb-2
-                 text-xs font-medium
-                 text-neutral-500"
-        >
-          Today
-        </p>
-
-
-        <div class="space-y-1">
-
-          <button
-            class="w-full text-left
-                   px-3 py-2
-                   rounded-lg
-                   text-sm text-neutral-300
-                   hover:bg-neutral-800
-                   transition
-                   truncate"
-          >
-            Understanding React hooks
-          </button>
-
-
-          <button
-            class="w-full text-left
-                   px-3 py-2
-                   rounded-lg
-                   text-sm text-neutral-300
-                   hover:bg-neutral-800
-                   transition
-                   truncate"
-          >
-            Build ChatGPT UI
-          </button>
-
-
-          <button
-            class="w-full text-left
-                   px-3 py-2
-                   rounded-lg
-                   text-sm text-neutral-300
-                   hover:bg-neutral-800
-                   transition
-                   truncate"
-          >
-            JavaScript async await
-          </button>
-
-        </div>
-
-
-        <!-- Yesterday -->
-
-        <p
-          class="px-2 mb-2 mt-7
-                 text-xs font-medium
-                 text-neutral-500"
-        >
-          Yesterday
-        </p>
-
-
-        <div class="space-y-1">
-
-          <button
-            class="w-full text-left
-                   px-3 py-2
-                   rounded-lg
-                   text-sm text-neutral-300
-                   hover:bg-neutral-800
-                   transition
-                   truncate"
-          >
-            MERN authentication
-          </button>
-
-
-          <button
-            class="w-full text-left
-                   px-3 py-2
-                   rounded-lg
-                   text-sm text-neutral-300
-                   hover:bg-neutral-800
-                   transition
-                   truncate"
-          >
-            PostgreSQL pagination
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <!-- Sidebar Bottom -->
-
-      <div class="p-3 border-t border-neutral-800">
-
-        <button
-          class="w-full flex items-center gap-3
-                 px-3 py-2.5
-                 rounded-lg
-                 text-sm text-neutral-300
-                 hover:bg-neutral-800
-                 transition"
-        >
-
-          <i data-lucide="settings" class="w-4 h-4"></i>
-
-          Settings
-
-        </button>
-
-
-        <button
-          class="w-full mt-1
-                 flex items-center gap-3
-                 px-3 py-2.5
-                 rounded-lg
-                 text-sm text-neutral-300
-                 hover:bg-neutral-800
-                 transition"
-        >
-
-          <i data-lucide="circle-help" class="w-4 h-4"></i>
-
-          Help
-
-        </button>
-
-      </div>
-
-    </aside>
-
-
-
-    <!-- =====================================================
-         MAIN AREA
-    ====================================================== -->
-
-    <main class="flex-1 min-w-0 relative">
-
-
-      <!-- ===================================================
-           TOP NAVBAR
-      ==================================================== -->
-
-      <header
-        class="absolute top-0 inset-x-0 z-20
-               h-14
-               border-b border-neutral-800/70
-               bg-neutral-950/80
-               backdrop-blur-xl"
-      >
-
-        <div
-          class="h-full
-                 flex items-center justify-between
-                 px-4"
-        >
-
-
-          <!-- Mobile menu + Title -->
-
-          <div class="flex items-center gap-3">
-
-            <!-- Mobile menu -->
-
-            <button
-              class="md:hidden
-                     w-9 h-9
-                     flex items-center justify-center
-                     rounded-lg
-                     hover:bg-neutral-800
-                     transition"
-            >
-
-              <i data-lucide="menu" class="w-5 h-5"></i>
-
+          <div class="suggestions">
+            <button class="suggestion" data-prompt="Write a JavaScript async/await function to fetch data from a REST API">
+              <div class="sug-icon"><i data-lucide="code-2" style="width:13px;height:13px;"></i></div>
+              <div class="sug-title">Write some code</div>
+              <div class="sug-desc">Build or debug an app</div>
             </button>
-
-
-            <div>
-
-              <h1 class="text-sm font-semibold">
-                chatDPT
-              </h1>
-
-              <p class="hidden sm:block text-[11px] text-neutral-500">
-                AI Assistant
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <!-- Right controls -->
-
-          <div class="flex items-center gap-1">
-
-            <button
-              class="w-9 h-9
-                     flex items-center justify-center
-                     rounded-lg
-                     text-neutral-400
-                     hover:text-white
-                     hover:bg-neutral-800
-                     transition"
-              title="Search"
-            >
-
-              <i data-lucide="search" class="w-4 h-4"></i>
-
+            <button class="suggestion" data-prompt="Explain how async/await works in JavaScript with a simple example">
+              <div class="sug-icon"><i data-lucide="lightbulb" style="width:13px;height:13px;"></i></div>
+              <div class="sug-title">Explain something</div>
+              <div class="sug-desc">Make complex topics simple</div>
             </button>
-
-
-            <button
-              class="w-9 h-9
-                     flex items-center justify-center
-                     rounded-lg
-                     text-neutral-400
-                     hover:text-white
-                     hover:bg-neutral-800
-                     transition"
-              title="More"
-            >
-
-              <i data-lucide="ellipsis" class="w-5 h-5"></i>
-
+            <button class="suggestion" data-prompt="Give me 5 project ideas for a junior developer learning GenAI">
+              <div class="sug-icon"><i data-lucide="brain" style="width:13px;height:13px;"></i></div>
+              <div class="sug-title">Brainstorm ideas</div>
+              <div class="sug-desc">Explore ideas and solutions</div>
             </button>
-
+            <button class="suggestion" data-prompt="Summarize and improve the clarity of this text: ">
+              <div class="sug-icon"><i data-lucide="file-text" style="width:13px;height:13px;"></i></div>
+              <div class="sug-title">Work with text</div>
+              <div class="sug-desc">Rewrite, summarize, improve</div>
+            </button>
           </div>
+        </section>
 
-        </div>
-
-      </header>
-
-
-
-      <!-- ===================================================
-           CHAT CONTENT
-      ==================================================== -->
-
-      <div
-        id="chat-container"
-        class="h-full
-               overflow-y-auto
-               px-4
-               pt-20
-               pb-44"
-      >
-
-        <div class="mx-auto max-w-3xl">
-
-
-          <!-- =================================================
-               WELCOME SCREEN
-          ================================================== -->
-
-          <section
-            id="welcome"
-            class="min-h-[calc(100vh-220px)]
-                   flex flex-col
-                   items-center
-                   justify-center
-                   text-center"
-          >
-
-
-            <!-- Logo -->
-
-            <div
-              class="w-16 h-16
-                     rounded-2xl
-                     bg-neutral-800
-                     border border-neutral-700
-                     flex items-center justify-center
-                     shadow-lg
-                     mb-6"
-            >
-
-              <i
-                data-lucide="sparkles"
-                class="w-7 h-7"
-              ></i>
-
-            </div>
-
-
-            <h2
-              class="text-3xl sm:text-4xl
-                     font-semibold
-                     tracking-tight"
-            >
-              How can I help you?
-            </h2>
-
-
-            <p
-              class="mt-3
-                     max-w-lg
-                     text-sm
-                     leading-6
-                     text-neutral-500"
-            >
-              Ask questions, solve problems, write code,
-              brainstorm ideas, or learn something new.
-            </p>
-
-
-
-            <!-- =================================================
-                 SUGGESTIONS
-            ================================================== -->
-
-            <div
-              class="grid
-                     grid-cols-1
-                     sm:grid-cols-2
-                     gap-3
-                     w-full
-                     max-w-2xl
-                     mt-10"
-            >
-
-
-              <!-- Card -->
-
-              <button
-                class="suggestion
-                       group
-                       text-left
-                       p-4
-                       rounded-xl
-                       border border-neutral-800
-                       bg-neutral-900/70
-                       hover:bg-neutral-800
-                       hover:border-neutral-700
-                       transition-all"
-              >
-
-                <div
-                  class="w-9 h-9
-                         rounded-lg
-                         bg-neutral-800
-                         flex items-center justify-center
-                         mb-3
-                         group-hover:bg-neutral-700
-                         transition"
-                >
-
-                  <i
-                    data-lucide="code-2"
-                    class="w-4 h-4"
-                  ></i>
-
-                </div>
-
-
-                <p class="text-sm font-medium">
-                  Write some code
-                </p>
-
-                <p class="mt-1 text-xs text-neutral-500">
-                  Build or debug my application
-                </p>
-
-              </button>
-
-
-
-              <!-- Card -->
-
-              <button
-                class="suggestion
-                       group
-                       text-left
-                       p-4
-                       rounded-xl
-                       border border-neutral-800
-                       bg-neutral-900/70
-                       hover:bg-neutral-800
-                       hover:border-neutral-700
-                       transition-all"
-              >
-
-                <div
-                  class="w-9 h-9
-                         rounded-lg
-                         bg-neutral-800
-                         flex items-center justify-center
-                         mb-3
-                         group-hover:bg-neutral-700
-                         transition"
-                >
-
-                  <i
-                    data-lucide="lightbulb"
-                    class="w-4 h-4"
-                  ></i>
-
-                </div>
-
-
-                <p class="text-sm font-medium">
-                  Explain something
-                </p>
-
-                <p class="mt-1 text-xs text-neutral-500">
-                  Make complex topics easier to understand
-                </p>
-
-              </button>
-
-
-
-              <!-- Card -->
-
-              <button
-                class="suggestion
-                       group
-                       text-left
-                       p-4
-                       rounded-xl
-                       border border-neutral-800
-                       bg-neutral-900/70
-                       hover:bg-neutral-800
-                       hover:border-neutral-700
-                       transition-all"
-              >
-
-                <div
-                  class="w-9 h-9
-                         rounded-lg
-                         bg-neutral-800
-                         flex items-center justify-center
-                         mb-3
-                         group-hover:bg-neutral-700
-                         transition"
-                >
-
-                  <i
-                    data-lucide="brain"
-                    class="w-4 h-4"
-                  ></i>
-
-                </div>
-
-
-                <p class="text-sm font-medium">
-                  Brainstorm ideas
-                </p>
-
-                <p class="mt-1 text-xs text-neutral-500">
-                  Explore ideas and find solutions
-                </p>
-
-              </button>
-
-
-
-              <!-- Card -->
-
-              <button
-                class="suggestion
-                       group
-                       text-left
-                       p-4
-                       rounded-xl
-                       border border-neutral-800
-                       bg-neutral-900/70
-                       hover:bg-neutral-800
-                       hover:border-neutral-700
-                       transition-all"
-              >
-
-                <div
-                  class="w-9 h-9
-                         rounded-lg
-                         bg-neutral-800
-                         flex items-center justify-center
-                         mb-3
-                         group-hover:bg-neutral-700
-                         transition"
-                >
-
-                  <i
-                    data-lucide="file-text"
-                    class="w-4 h-4"
-                  ></i>
-
-                </div>
-
-
-                <p class="text-sm font-medium">
-                  Work with text
-                </p>
-
-                <p class="mt-1 text-xs text-neutral-500">
-                  Rewrite, summarize, or improve content
-                </p>
-
-              </button>
-
-            </div>
-
-          </section>
-
-
-
-          <!-- =================================================
-               MESSAGES
-          ================================================== -->
-
-          <!--
-          Keep your JavaScript-generated messages here.
-
-          USER MESSAGE EXAMPLE:
-
-          <div class="flex justify-end mb-8">
-
-            <div
-              class="max-w-[85%] sm:max-w-[70%]
-                     rounded-2xl
-                     rounded-br-md
-                     bg-neutral-800
-                     px-4 py-3"
-            >
-
-              <p class="text-sm leading-6">
-                Explain React useMemo.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          AI MESSAGE EXAMPLE:
-
-          <div class="flex gap-3 mb-8">
-
-            <div
-              class="shrink-0
-                     w-8 h-8
-                     rounded-lg
-                     bg-white
-                     text-black
-                     flex items-center justify-center"
-            >
-
-              <span class="text-xs font-bold">
-                D
-              </span>
-
-            </div>
-
-
-            <div
-              class="max-w-[85%]
-                     text-sm
-                     leading-7
-                     text-neutral-200"
-            >
-
-              React's useMemo hook allows you to
-              memoize a calculated value...
-
-            </div>
-
-          </div>
-          -->
-
-
-        </div>
-
+        <!-- script.js appends messages directly into #chat-container → they land after this inner div -->
       </div>
+    </div>
 
+    <!-- Scroll-to-bottom -->
+    <button id="scroll-to-bottom" title="Jump to latest" aria-label="Scroll to bottom">
+      <i data-lucide="chevron-down" style="width:13px;height:13px;"></i>
+    </button>
 
-
-      <!-- ===================================================
-           MESSAGE COMPOSER
-      ==================================================== -->
-
-      <div
-        class="absolute
-               bottom-0
-               inset-x-0
-               z-10
-               pt-12
-               bg-gradient-to-t
-               from-neutral-950
-               via-neutral-950
-               to-transparent"
-      >
-
-        <div class="mx-auto max-w-3xl px-4 pb-4">
-
-
-          <!-- Input box -->
-
-          <div
-            class="relative
-                   rounded-2xl
-                   border border-neutral-700
-                   bg-neutral-900
-                   shadow-2xl
-                   shadow-black/30
-                   transition
-                   focus-within:border-neutral-500
-                   focus-within:ring-1
-                   focus-within:ring-neutral-700"
-          >
-
-
-            <!-- Textarea -->
-
-            <textarea
-              id="input"
-              rows="1"
-              placeholder="Message chatDPT..."
-              class="w-full
-                     resize-none
-                     bg-transparent
-                     outline-none
-                     px-4
-                     pt-4
-                     pb-14
-                     text-sm
-                     text-white
-                     placeholder:text-neutral-500
-                     max-h-52"
-            ></textarea>
-
-
-
-            <!-- Input Controls -->
-
-            <div
-              class="absolute
-                     bottom-2
-                     left-2
-                     right-2
-                     flex
-                     items-center
-                     justify-between"
-            >
-
-
-              <!-- Left controls -->
-
-              <div class="flex items-center gap-1">
-
-
-                <button
-                  type="button"
-                  class="w-9 h-9
-                         rounded-lg
-                         flex items-center justify-center
-                         text-neutral-400
-                         hover:text-white
-                         hover:bg-neutral-800
-                         transition"
-                  title="Attach file"
-                >
-
-                  <i
-                    data-lucide="paperclip"
-                    class="w-4 h-4"
-                  ></i>
-
-                </button>
-
-
-                <button
-                  type="button"
-                  class="hidden sm:flex
-                         w-9 h-9
-                         rounded-lg
-                         items-center justify-center
-                         text-neutral-400
-                         hover:text-white
-                         hover:bg-neutral-800
-                         transition"
-                  title="Add tools"
-                >
-
-                  <i
-                    data-lucide="sliders-horizontal"
-                    class="w-4 h-4"
-                  ></i>
-
-                </button>
-
-              </div>
-
-
-
-              <!-- Send -->
-
-              <button
-                id="ask"
-                type="button"
-                disabled
-                class="w-9 h-9
-                       rounded-xl
-                       bg-white
-                       text-black
-                       flex items-center justify-center
-                       opacity-30
-                       cursor-not-allowed
-                       transition
-                       hover:bg-neutral-200"
-                title="Send message"
-              >
-
-                <i
-                  data-lucide="arrow-up"
-                  class="w-4 h-4"
-                ></i>
-
+    <!-- Composer -->
+    <div id="composer-wrap">
+      <div id="composer-inner">
+        <div id="composer-box">
+          <textarea
+            id="input"
+            rows="1"
+            placeholder="Message chatDPT…"
+            aria-label="Message input"
+          ></textarea>
+          <div class="composer-footer">
+            <div class="composer-left">
+              <button class="icon-btn" title="Attach file">
+                <i data-lucide="paperclip" style="width:13px;height:13px;"></i>
               </button>
-
+              <button class="icon-btn" title="Tools">
+                <i data-lucide="sliders-horizontal" style="width:13px;height:13px;"></i>
+              </button>
             </div>
-
+            <!-- id="ask" matches script.js -->
+            <button id="ask" disabled aria-label="Send message" title="Send">
+              <i data-lucide="arrow-up" style="width:13px;height:13px;"></i>
+            </button>
           </div>
-
-
-
-          <!-- Disclaimer -->
-
-          <p
-            class="text-center
-                   text-[11px]
-                   text-neutral-600
-                   mt-2"
-          >
-            chatDPT may make mistakes. Check important information.
-          </p>
-
         </div>
-
+        <p class="disclaimer">chatDPT may make mistakes. Verify important information.</p>
       </div>
+    </div>
 
-    </main>
+  </main>
+</div>
 
-  </div>
+<script>
+  lucide.createIcons();
 
+  /* ── Mobile sidebar ── */
+  const _sidebar  = document.getElementById('sidebar');
+  const _overlay  = document.getElementById('sidebar-overlay');
+  const _menuBtn  = document.getElementById('mobile-menu');
 
-  <!-- Icons only — no application JavaScript -->
-  <script>
-    lucide.createIcons();
-  </script>
+  function isMobile() { return window.innerWidth < 768; }
 
-  <!-- Your JavaScript -->
-  <script src="./script.js"></script>
+  _menuBtn.addEventListener('click', () => {
+    _sidebar.classList.toggle('open');
+    _overlay.classList.toggle('show');
+  });
+
+  _overlay.addEventListener('click', () => {
+    _sidebar.classList.remove('open');
+    _overlay.classList.remove('show');
+  });
+
+  window.addEventListener('resize', () => {
+    if (!isMobile()) {
+      _sidebar.classList.remove('open');
+      _overlay.classList.remove('show');
+    }
+  });
+
+  /* ── Hide welcome on first message ── */
+  const _chatContainer = document.getElementById('chat-container');
+  const _welcome       = document.getElementById('welcome');
+  const _origAppend    = _chatContainer.appendChild.bind(_chatContainer);
+
+  _chatContainer.appendChild = function(node) {
+    if (_welcome && _welcome.style.display !== 'none') {
+      _welcome.style.display = 'none';
+    }
+    return _origAppend(node);
+  };
+
+  /* ── Textarea auto-resize ── */
+  const _input  = document.getElementById('input');
+  const _askBtn = document.getElementById('ask');
+
+  _input.addEventListener('input', () => {
+    _input.style.height = 'auto';
+    _input.style.height = Math.min(_input.scrollHeight, 180) + 'px';
+    _askBtn.disabled = _input.value.trim() === '';
+  });
+
+  /* ── Suggestion cards ── */
+  document.querySelectorAll('.suggestion').forEach(card => {
+    card.addEventListener('click', () => {
+      _input.value = card.dataset.prompt;
+      _input.dispatchEvent(new Event('input'));
+      _input.focus();
+    });
+  });
+
+  /* ── New chat ── */
+  document.getElementById('new-chat').addEventListener('click', () => {
+    const _inner = document.getElementById('chat-inner');
+    while (_chatContainer.lastChild !== _inner) {
+      _chatContainer.removeChild(_chatContainer.lastChild);
+    }
+    _welcome.style.display = 'flex';
+    _input.value = '';
+    _input.style.height = 'auto';
+    _askBtn.disabled = true;
+    if (isMobile()) {
+      _sidebar.classList.remove('open');
+      _overlay.classList.remove('show');
+    }
+  });
+
+  /* ── Scroll-to-bottom ── */
+  const _scrollBtn = document.getElementById('scroll-to-bottom');
+
+  _chatContainer.addEventListener('scroll', () => {
+    const gap = _chatContainer.scrollHeight - _chatContainer.scrollTop - _chatContainer.clientHeight;
+    _scrollBtn.classList.toggle('show', gap > 100);
+  });
+
+  _scrollBtn.addEventListener('click', () => {
+    _chatContainer.scrollTo({ top: _chatContainer.scrollHeight, behavior: 'smooth' });
+  });
+</script>
+
+<script src="./script.js"></script>
+
+<!-- Your existing script — unchanged -->
+<script src="./script.js"></script>
 
 </body>
-
 </html>
-```
