@@ -23,6 +23,7 @@ app.post('/chat', async (req, res) => {
     const result = await generate(message, threadId);
     
     console.log('result: ', result);
+    
 
     res.json({ message: result });
 })
