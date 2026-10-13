@@ -44,6 +44,9 @@ export async function generate(userMessage, threadId) {
         },
 
   ];
+
+
+  
   
    const messages = cache.get(threadId) ?? BaseMessages;
 
