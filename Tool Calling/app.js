@@ -111,7 +111,5 @@ async function webSearch({ query }) {
   return finalResponse;
 }
 
-
-
 main();
 
